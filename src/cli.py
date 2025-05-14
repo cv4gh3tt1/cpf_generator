@@ -14,9 +14,10 @@ Uso:
   python cli.py validate <CPF_NUMBER>
   python cli.py --help
 """
-import argparse # Adicionado para análise de argumentos
-import sys # Adicionado para tratamento de erros
-import re # Adicionado para formatação opcional na saída
+
+import argparse  # Adicionado para análise de argumentos
+import sys  # Adicionado para tratamento de erros
+import re  # Adicionado para formatação opcional na saída
 
 # Importa as funções de geração e validação de CPF
 from cpf.generator import generate_cpf
@@ -40,14 +41,16 @@ def main():
     """
     # Configuração do ArgumentParser
     parser = argparse.ArgumentParser(description="Gerador e validador de CPF - CLI.")
-    subparsers = parser.add_subparsers(dest="command", help="Comandos disponíveis", required=True) # Adicionado help e required
+    subparsers = parser.add_subparsers(
+        dest="command", help="Comandos disponíveis", required=True
+    )  # Adicionado help e required
 
     # Subcomando para gerar CPF
-    generate_parser = subparsers.add_parser("generate", help="Gerar um CPF válido.")
+    generate_parser = subparsers.add_parser("generate", help="Gerar um CPF válido:")
     generate_parser.add_argument(
         "--raw",
         action="store_true",
-        help="Gerar CPF sem formatação (apenas os 11 dígitos).", # Melhorada a descrição
+        help="Gerar CPF sem formatação (apenas os 11 dígitos).",  # Melhorada a descrição
     )
 
     # Subcomando para validar CPF
@@ -56,14 +59,14 @@ def main():
     validate_parser.add_argument(
         "cpf",
         type=str,
-        help="O número do CPF a ser validado (pode estar formatado ou não).", # Melhorada a descrição
+        help="O número do CPF a ser validado (pode estar formatado ou não).",  # Melhorada a descrição
     )
 
     args = parser.parse_args()
 
     # Verifica o comando e executa a ação correspondente
     if args.command == "generate":
-        cpf_gerado = generate_cpf(formatted=not args.raw) # Renomeado para clareza
+        cpf_gerado = generate_cpf(formatted=not args.raw)  # Renomeado para clareza
         print(f"CPF gerado: {cpf_gerado}")
     elif args.command == "validate":
         is_valid = validate_cpf(args.cpf)
@@ -73,11 +76,11 @@ def main():
         try:
             # Tenta formatar se for um CPF válido em termos de dígitos, mesmo que os DVs não batam
             # Isso é apenas para exibição, a validação já foi feita
-            cpf_numeros_input = re.sub(r'[^0-9]', '', args.cpf)
+            cpf_numeros_input = re.sub(r"[^0-9]", "", args.cpf)
             if len(cpf_numeros_input) == 11:
-                 cpf_display = f"{cpf_numeros_input[:3]}.{cpf_numeros_input[3:6]}.{cpf_numeros_input[6:9]}-{cpf_numeros_input[9:]}"
+                cpf_display = f"{cpf_numeros_input[:3]}.{cpf_numeros_input[3:6]}.{cpf_numeros_input[6:9]}-{cpf_numeros_input[9:]}"
         except Exception:
-            pass # Mantém o original se a formatação falhar
+            pass  # Mantém o original se a formatação falhar
 
         # Exibe o resultado da validação
         # O CPF pode estar formatado ou não, mas a validação deve ser feita com o CPF limpo
@@ -88,6 +91,7 @@ def main():
             print(f"O CPF {cpf_display} é inválido.")
     # O bloco else não é mais necessário se 'required=True' for usado em subparsers,
     # pois o argparse lidará com a ausência de comando.
+
 
 if __name__ == "__main__":
     main()
