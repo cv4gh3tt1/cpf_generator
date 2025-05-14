@@ -1,75 +1,53 @@
+"""Validação de CPF (br).
+Este módulo valida números de CPF brasileiros.
+O CPF (Cadastro de Pessoas Físicas) é um número de identificação fiscal emitido pela Receita Federal do Brasil. Ele é composto por 11 dígitos, sendo os 9 primeiros o número base e os 2 últimos os dígitos verificadores.
+"""
+
 import re
-# Supondo que generator.py está no mesmo diretório ou no PYTHONPATH
-# Se estiverem no mesmo pacote, poderia ser: from .generator import ...
-from generator import calcular_digito_verificador, formatar_cpf, gerar_cpf
 
-def validar_cpf(cpf_a_validar: str) -> bool:
+
+def validate_cpf(cpf: str) -> bool:
     """
-    Valida um número de CPF.
-    Verifica o formato, sequências inválidas e os dígitos verificadores.
+    Valida um número de CPF brasileiro.
+
+    A função primeiro limpa o CPF de entrada, removendo quaisquer caracteres
+    não numéricos. Em seguida, verifica se o CPF limpo tem 11 dígitos
+    e se não é uma sequência de dígitos repetidos (ex: "11111111111").
+    Finalmente, calcula os dois dígitos verificadores com base nos primeiros
+    nove dígitos e os compara com os dígitos fornecidos no CPF.
+
+    Args:
+        cpf: Uma string representando o número do CPF a ser validado.
+             Pode conter ou não caracteres de formatação (pontos, traços).
+
+    Returns:
+        True se o CPF for válido, False caso contrário.
     """
-    if not isinstance(cpf_a_validar, str):
+    cpf_limpo = re.sub(r"[^0-9]", "", cpf)
+    if len(cpf_limpo) != 11 or cpf_limpo == cpf_limpo[0] * 11:
         return False
 
-    # Remove caracteres não numéricos
-    cpf_limpo = re.sub(r'[^0-9]', '', cpf_a_validar)
+    def calculate_digit(digits: str) -> str:
+        """
+        Calcula um dígito verificador do CPF com base nos dígitos fornecidos.
 
-    # Verifica se tem 11 dígitos
-    if len(cpf_limpo) != 11:
-        return False
+        O cálculo é feito multiplicando cada dígito por um peso decrescente
+        (começando em len(digits) + 1), somando os resultados, e então
+        calculando o resto da divisão por 11. O dígito verificador é
+        11 menos esse resto, a menos que o resultado seja 10 ou 11,
+        caso em que o dígito verificador é 0.
 
-    # Verifica se todos os dígitos são iguais (ex: 111.111.111-11), o que é inválido
-    if cpf_limpo == cpf_limpo[0] * 11:
-        return False
+        Args:
+            digits: Uma string contendo os dígitos base para o cálculo
+                    (9 dígitos para o primeiro DV, 10 para o segundo DV).
 
-    # Separa os números e os dígitos verificadores informados
-    try:
-        numeros_base = [int(digito) for digito in cpf_limpo[:9]]
-        dv1_informado = int(cpf_limpo[9])
-        dv2_informado = int(cpf_limpo[10])
-    except ValueError:
-        return False # Caso haja algum não-dígito que passou pelo regex (improvável)
+        Returns:
+            Uma string representando o dígito verificador calculado ("0" a "9").
+        """
+        total = sum((len(digits) + 1 - i) * int(n) for i, n in enumerate(digits))
+        remainder = 11 - (total % 11)
+        return "0" if remainder > 9 else str(remainder)
 
-    # Calcula o primeiro dígito verificador
-    dv1_calculado = calcular_digito_verificador([str(d) for d in numeros_base])
-    if dv1_calculado != dv1_informado:
-        return False
-
-    # Calcula o segundo dígito verificador
-    numeros_com_dv1 = numeros_base + [dv1_calculado]
-    dv2_calculado = calcular_digito_verificador([str(d) for d in numeros_com_dv1])
-    if dv2_calculado != dv2_informado:
-        return False
-
-    return True
-
-if __name__ == "__main__":
-    print("--- Teste de Validação de CPF ---")
-
-    # Teste com CPF gerado (que deve ser sempre válido)
-    cpf_gerado_para_teste = gerar_cpf()
-    print(f"\nTestando CPF gerado: {formatar_cpf(cpf_gerado_para_teste)}")
-    if validar_cpf(cpf_gerado_para_teste):
-        print(f"Resultado: O CPF {formatar_cpf(cpf_gerado_para_teste)} é VÁLIDO (Esperado: VÁLIDO) - CORRETO")
-    else:
-        print(f"Resultado: O CPF {formatar_cpf(cpf_gerado_para_teste)} é INVÁLIDO (Esperado: VÁLIDO) - INCORRETO")
-
-    # Testes com CPFs conhecidos
-    cpfs_para_testar = [
-        ("111.111.111-11", False, "Todos os dígitos iguais"),
-        ("123.456.789-00", False, "Dígitos verificadores incorretos"),
-        ("00000000000", False, "Todos os dígitos iguais (sem formatação)"),
-        ("12345", False, "Comprimento incorreto"),
-        ("abcdefghijk", False, "Não numérico"),
-        (gerar_cpf(), True, "CPF válido gerado dinamicamente"), # Testa outro CPF gerado
-        ("53476490097", True, "CPF válido conhecido"), # Exemplo de CPF válido
-        ("53476490098", False, "CPF inválido conhecido (DV2 errado)"), # Exemplo de CPF inválido
-    ]
-
-    for cpf_str, esperado, descricao in cpfs_para_testar:
-        resultado = validar_cpf(cpf_str)
-        status_resultado = "VÁLIDO" if resultado else "INVÁLIDO"
-        status_esperado = "VÁLIDO" if esperado else "INVÁLIDO"
-        verificacao = "CORRETO" if resultado == esperado else "INCORRETO"
-        print(f"\nTestando CPF: {cpf_str} ({descricao})")
-        print(f"Resultado: {status_resultado} (Esperado: {status_esperado}) - {verificacao}")
+    d1 = calculate_digit(cpf_limpo[:9])
+    d2 = calculate_digit(cpf_limpo[:9] + d1)
+    return cpf_limpo.endswith(d1 + d2)
