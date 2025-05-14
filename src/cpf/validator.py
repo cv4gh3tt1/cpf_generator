@@ -4,8 +4,9 @@ O CPF (Cadastro de Pessoas Físicas) é um número de identificação fiscal emi
 """
 
 import re
+from .generator import calculate_digit  # Importa a função de cálculo de dígito verificador do módulo generator
 
-
+# Função para validar CPF
 def validate_cpf(cpf: str) -> bool:
     """
     Valida um número de CPF brasileiro.
@@ -26,27 +27,6 @@ def validate_cpf(cpf: str) -> bool:
     cpf_limpo = re.sub(r"[^0-9]", "", cpf)
     if len(cpf_limpo) != 11 or cpf_limpo == cpf_limpo[0] * 11:
         return False
-
-    def calculate_digit(digits: str) -> str:
-        """
-        Calcula um dígito verificador do CPF com base nos dígitos fornecidos.
-
-        O cálculo é feito multiplicando cada dígito por um peso decrescente
-        (começando em len(digits) + 1), somando os resultados, e então
-        calculando o resto da divisão por 11. O dígito verificador é
-        11 menos esse resto, a menos que o resultado seja 10 ou 11,
-        caso em que o dígito verificador é 0.
-
-        Args:
-            digits: Uma string contendo os dígitos base para o cálculo
-                    (9 dígitos para o primeiro DV, 10 para o segundo DV).
-
-        Returns:
-            Uma string representando o dígito verificador calculado ("0" a "9").
-        """
-        total = sum((len(digits) + 1 - i) * int(n) for i, n in enumerate(digits))
-        remainder = 11 - (total % 11)
-        return "0" if remainder > 9 else str(remainder)
 
     d1 = calculate_digit(cpf_limpo[:9])
     d2 = calculate_digit(cpf_limpo[:9] + d1)
