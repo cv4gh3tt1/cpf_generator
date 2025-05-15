@@ -82,7 +82,7 @@ cpf_generator/
 
 ## Outras Informações Relevantes
 
-- **Documentação online:** Consulte a documentação em [docs/index.md](docs/index.md).
+- **Documentação online:** Consulte a documentação em [docs/index.md](https://github.com/cv4gh3tt1/cpf_generator/blob/main/docs/index.md)
 - **Testes:** Os arquivos de teste estão em [tests/](tests/).
 - **Licença:** Consulte o repositório para informações de licença.
 - **Contribuição:** Pull requests são bem-vindos!
