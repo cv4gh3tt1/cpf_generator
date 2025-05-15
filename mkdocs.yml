@@ -1,1 +1,5 @@
-site_name: My Docs
+site_name: CPF Generator
+repo_url: https://github.com/cv4gh3tt1/cpf_generator
+
+theme:
+  name: readthedocs
